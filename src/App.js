@@ -98,21 +98,21 @@ const KeyBoardComponent = (props) => {
         (e) => {
           const newGuess = e.target.id;
           console.log(newGuess);
+          if (newGuess === "") {
+            return;
+          }
           const updatedWordleGuessList = [...props.wordleGuessList];
-          console.log(updatedWordleGuessList);
-          const rowToSet = props.arrCoords[0];
-          const indexToSet = props.arrCoords[1];
-          const updatedRow = updatedWordleGuessList[rowToSet];
-          updatedRow[indexToSet] = setKeyValue(newGuess, indexToSet);
-          console.log("did it work?");
-          console.log(updatedWordleGuessList);
-          const newIndex = setIndexValue(newGuess, indexToSet);
-          console.log(newIndex);
+          const rowCoord = props.arrCoords[0];
+          const indexCoord = handleDelete(newGuess, props.arrCoords[1]);
+          const newWordleRow = updatedWordleGuessList[rowCoord];
+          if (indexCoord === 5 && newGuess !== "Delete") {
+            return;
+          }
+          newWordleRow[indexCoord] = setKeyValue(newGuess, indexCoord);
+          const newIndex = setIndexValue(newGuess, indexCoord);
           const newArrCoords = [...props.arrCoords];
           newArrCoords[1] = newIndex;
           props.setArrayCoords(newArrCoords);
-          console.log("new arr coords");
-          console.log(newArrCoords);
         })
       }
     >
@@ -123,29 +123,35 @@ const KeyBoardComponent = (props) => {
   );
 };
 
-const setKeyValue = (keyboardKey, currentIndex) => {
-  if (keyboardKey === "Delete") {
+const setKeyValue = (newGuess, indexCoord) => {
+  if (newGuess === "Delete") {
     return "";
-  } else if (keyboardKey === "Enter") {
-    // Do Something
-    return "";
-  } else if (currentIndex < 5) {
-    return keyboardKey;
   }
+  if (newGuess === "Enter") {
+    // Do Something
+    return;
+  }
+  if (indexCoord <= 4) {
+    return newGuess;
+  }
+  return;
 };
 
-const setIndexValue = (keyboardKey, currentIndex) => {
-  if (currentIndex <= 4 && keyboardKey === "Delete") {
-    return currentIndex;
-  } else if (
-    currentIndex < 4 &&
-    keyboardKey !== "Delete" &&
-    keyboardKey !== "Enter"
-  ) {
-    return currentIndex + 1;
-  } else {
-    return currentIndex;
+const setIndexValue = (newGuess, indexCoord) => {
+  if (indexCoord <= 4 && newGuess === "Delete") {
+    return indexCoord;
   }
+  if (indexCoord <= 4 && newGuess !== "Delete" && newGuess !== "Enter") {
+    return indexCoord + 1;
+  }
+  return indexCoord;
+};
+
+const handleDelete = (newGuess, indexToSet) => {
+  if (newGuess === "Delete" && indexToSet > 0 && indexToSet <= 5) {
+    return indexToSet - 1;
+  }
+  return indexToSet;
 };
 
 export default App;
