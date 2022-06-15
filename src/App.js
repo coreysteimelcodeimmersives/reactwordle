@@ -28,11 +28,13 @@ const keyBoardArr = [keysRow1, keysRow2, keysRow3];
 // };
 
 function App() {
-  const [wordleGuessList, setWordleGuessList] = useState([...defaultGuessList]);
+  const [wordleGuessList, setWordleGuessList] = useState([
+    JSON.parse(JSON.stringify(defaultGuessList)),
+  ]);
   const [arrCoords, setArrayCoords] = useState([0, 0]);
 
-  const handleKeyEvent = (e) => {
-    const newGuess = e.target.id;
+  const handleKeyEvent = (letter) => {
+    const newGuess = letter;
     // const updatedWordleGuessList = [...wordleGuessList];
     const updatedWordleGuessList = [
       [...wordleGuessList[0]],
@@ -61,8 +63,6 @@ function App() {
     newWordleRow[squareIndex] = setKeyValue(newGuess, squareIndex);
     updatedWordleGuessList[rowCoord] = newWordleRow;
     setWordleGuessList(updatedWordleGuessList);
-
-    // const newSquareIndex = setIndexValue(squareIndex);
 
     newArrCoords[1] = setIndexValue(newGuess, squareIndex);
     setArrayCoords(newArrCoords);
@@ -119,8 +119,10 @@ const KeyComponent = ({ letter, handleKeyEvent }) => {
   return (
     <div
       className="Keyboard-key"
-      id={letter}
-      onClick={("click", handleKeyEvent)}
+      // id={letter}
+      onClick={(e) => {
+        handleKeyEvent(letter);
+      }}
     >
       {letter}
     </div>
@@ -133,7 +135,7 @@ const KeyRowComponent = ({ keyRow, handleKeyEvent }) => {
       {keyRow.map((letter, index) => {
         return (
           <KeyComponent
-            key={index}
+            key={letter}
             letter={letter}
             handleKeyEvent={handleKeyEvent}
           ></KeyComponent>
@@ -149,7 +151,7 @@ const KeyBoardComponent = ({ handleKeyEvent }) => {
       {keyBoardArr.map((row, index) => {
         return (
           <KeyRowComponent
-            key={index}
+            key={row}
             keyRow={row}
             handleKeyEvent={handleKeyEvent}
           ></KeyRowComponent>
@@ -160,14 +162,6 @@ const KeyBoardComponent = ({ handleKeyEvent }) => {
 };
 
 const handleDelete = (newGuess, indexToSet) => {
-  // if (newGuess !== "Delete") {
-  //   return indexToSet;
-  // }
-
-  // if (indexToSet === 0) {
-  //   return indexToSet;
-  // }
-
   if (newGuess === "Delete") {
     return indexToSet - 1;
   }
@@ -182,10 +176,10 @@ const setKeyValue = (newGuess, squareIndex) => {
   if (newGuess === "Delete") {
     return "";
   }
-  // if (newGuess === "Enter") {
-  //   // Do Something
-  //   return;
-  // }
+  if (newGuess === "Enter") {
+    // Do Something
+    return;
+  }
   if (squareIndex <= 4) {
     return newGuess;
   }
@@ -193,6 +187,10 @@ const setKeyValue = (newGuess, squareIndex) => {
 };
 
 const setIndexValue = (newGuess, squareIndex) => {
+  if (newGuess === "Enter") {
+    return squareIndex;
+  }
+
   if (squareIndex < 0) {
     return 0;
   }
