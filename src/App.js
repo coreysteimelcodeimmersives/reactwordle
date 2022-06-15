@@ -33,7 +33,6 @@ function App() {
 
   const handleKeyEvent = (e) => {
     const newGuess = e.target.id;
-    console.log(newGuess);
     // const updatedWordleGuessList = [...wordleGuessList];
     const updatedWordleGuessList = [
       [...wordleGuessList[0]],
@@ -44,18 +43,29 @@ function App() {
       [...wordleGuessList[5]],
     ];
 
-    const rowCoord = arrCoords[0];
-    const colCoord = arrCoords[1];
+    const newArrCoords = [...arrCoords];
+    console.log("new arr coords", newArrCoords);
+
+    const rowCoord = newArrCoords[0];
+    const newWordleRow = updatedWordleGuessList[rowCoord];
+
+    const colCoord = newArrCoords[1];
     const squareIndex = handleDelete(newGuess, colCoord);
 
-    const newWordleRow = updatedWordleGuessList[rowCoord];
-    newWordleRow[squareIndex] = setKeyValue(newGuess, squareIndex);
+    console.log("square index", squareIndex);
 
-    const newIndex = setIndexValue(newGuess, squareIndex);
-    const newArrCoords = [...arrCoords];
-    newArrCoords[1] = newIndex;
-    setArrayCoords(newArrCoords);
+    if (squareIndex === 5) {
+      return;
+    }
+
+    newWordleRow[squareIndex] = setKeyValue(newGuess, squareIndex);
+    updatedWordleGuessList[rowCoord] = newWordleRow;
     setWordleGuessList(updatedWordleGuessList);
+
+    // const newSquareIndex = setIndexValue(squareIndex);
+
+    newArrCoords[1] = setIndexValue(newGuess, squareIndex);
+    setArrayCoords(newArrCoords);
   };
 
   return (
@@ -149,59 +159,52 @@ const KeyBoardComponent = ({ handleKeyEvent }) => {
   );
 };
 
-const setKeyValue = (newGuess, indexCoord) => {
-  if (newGuess === "Delete") {
-    return "";
-  }
-  if (newGuess === "Enter") {
-    // Do Something
-    return;
-  }
-  if (indexCoord <= 4) {
-    return newGuess;
-  }
-  return;
-};
-
-const setIndexValue = (newGuess, indexCoord) => {
-  if (newGuess === "Delete") {
-    return indexCoord;
-  }
-  if (newGuess === "Enter") {
-    // Do Something
-    return;
-  }
-  if (indexCoord <= 4) {
-    // return newGuess;
-    return indexCoord + 1;
-  }
-  // return indexCoord + 1;
-  return;
-  /* if (indexCoord <= 4 && newGuess === "Delete") {
-    return indexCoord;
-  }
-  if (indexCoord <= 4 && newGuess !== "Delete" && newGuess !== "Enter") {
-    return indexCoord + 1;
-  }
-  return indexCoord; */
-};
-
 const handleDelete = (newGuess, indexToSet) => {
-  /* if (newGuess === "Delete") {
-    return indexCoord;
-  }
-  if (newGuess === "Enter") {
-    // Do Something
-    return;
-  }
-  if (indexCoord <= 4) {
-    return newGuess;
-  }
-  return indexCoord + 1; */
-  if (newGuess === "Delete" && indexToSet > 0 && indexToSet <= 5) {
+  // if (newGuess !== "Delete") {
+  //   return indexToSet;
+  // }
+
+  // if (indexToSet === 0) {
+  //   return indexToSet;
+  // }
+
+  if (newGuess === "Delete") {
     return indexToSet - 1;
   }
   return indexToSet;
+};
+
+const setKeyValue = (newGuess, squareIndex) => {
+  if (squareIndex > 4) {
+    return;
+  }
+
+  if (newGuess === "Delete") {
+    return "";
+  }
+  // if (newGuess === "Enter") {
+  //   // Do Something
+  //   return;
+  // }
+  if (squareIndex <= 4) {
+    return newGuess;
+  }
+  return;
+};
+
+const setIndexValue = (newGuess, squareIndex) => {
+  if (squareIndex < 0) {
+    return 0;
+  }
+
+  if (newGuess === "Delete") {
+    return squareIndex;
+  }
+  if (squareIndex <= 4) {
+    // return newGuess;
+    return squareIndex + 1;
+  }
+  return;
 };
 
 export default App;
