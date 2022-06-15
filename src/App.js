@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import "./App.css";
+import { answerList, wordList } from "./wordleWords.js";
 
-const wordleArr = ["flame", "focus", "react"];
+const wordleArr = answerList;
 const rand = Math.floor(Math.random() * wordleArr.length);
-console.log(rand);
 const answer = wordleArr[rand];
 const answerArr = answer.split("");
 console.log(answerArr);
@@ -28,14 +28,16 @@ const keyBoardArr = [keysRow1, keysRow2, keysRow3];
 // };
 
 function App() {
-  const [wordleGuessList, setWordleGuessList] = useState([
-    JSON.parse(JSON.stringify(defaultGuessList)),
-  ]);
+  const [wordleGuessList, setWordleGuessList] = useState(
+    JSON.parse(JSON.stringify(defaultGuessList))
+  );
   const [arrCoords, setArrayCoords] = useState([0, 0]);
 
   const handleKeyEvent = (letter) => {
     const newGuess = letter;
-    // const updatedWordleGuessList = [...wordleGuessList];
+
+    const newArrCoords = [...arrCoords];
+
     const updatedWordleGuessList = [
       [...wordleGuessList[0]],
       [...wordleGuessList[1]],
@@ -45,26 +47,23 @@ function App() {
       [...wordleGuessList[5]],
     ];
 
-    const newArrCoords = [...arrCoords];
-    console.log("new arr coords", newArrCoords);
-
     const rowCoord = newArrCoords[0];
     const newWordleRow = updatedWordleGuessList[rowCoord];
-
     const colCoord = newArrCoords[1];
+
+    if (newGuess === "Enter") {
+      const updateArrCoords = handleEnter(newWordleRow, newArrCoords);
+      setArrayCoords(updateArrCoords);
+    }
+
     const squareIndex = handleDelete(newGuess, colCoord);
-
-    console.log("square index", squareIndex);
-
     if (squareIndex === 5) {
       return;
     }
-
     newWordleRow[squareIndex] = setKeyValue(newGuess, squareIndex);
     updatedWordleGuessList[rowCoord] = newWordleRow;
     setWordleGuessList(updatedWordleGuessList);
-
-    newArrCoords[1] = setIndexValue(newGuess, squareIndex);
+    newArrCoords[1] = setSquareIndexValue(newGuess, squareIndex);
     setArrayCoords(newArrCoords);
   };
 
@@ -80,17 +79,17 @@ function App() {
   );
 }
 
-const SquareComponent = (props) => {
-  return <div className="Wordle-square">{props.square}</div>;
+const SquareComponent = ({ square }) => {
+  return <div className="Wordle-square">{square}</div>;
 };
 
-const RowComponent = ({}) => {
+const RowComponent = ({ rowIndex, row }) => {
   return (
     <div className="Wordle-row">
-      {props.row.map((square, index) => {
+      {row.map((square, index) => {
         return (
           <SquareComponent
-            key={`square-component-${props.rowIndex}-${index}`}
+            key={`square-component-${rowIndex}-${index}`}
             square={square}
           ></SquareComponent>
         );
@@ -105,7 +104,7 @@ const ColumnComponent = ({ wordleGuessList }) => {
       {wordleGuessList.map((row, index) => {
         return (
           <RowComponent
-            key={`row-component-${index}`}
+            key={`row-component-${row}-${index}`}
             rowIndex={row}
             row={row}
           ></RowComponent>
@@ -186,7 +185,7 @@ const setKeyValue = (newGuess, squareIndex) => {
   return;
 };
 
-const setIndexValue = (newGuess, squareIndex) => {
+const setSquareIndexValue = (newGuess, squareIndex) => {
   if (newGuess === "Enter") {
     return squareIndex;
   }
@@ -203,6 +202,27 @@ const setIndexValue = (newGuess, squareIndex) => {
     return squareIndex + 1;
   }
   return;
+};
+
+const handleEnter = (newWordleRow, newArrCoords) => {
+  if (newWordleRow.includes("")) {
+    alert("Too short");
+    return newArrCoords;
+  }
+  const userWord = newWordleRow.join("").toLowerCase();
+
+  if (userWord === answer) {
+    alert("Congrats, you won!");
+    return newArrCoords;
+  }
+
+  if (!answerList.includes(userWord) && !wordList.includes(userWord)) {
+    alert("Word not found");
+    return newArrCoords;
+  }
+
+  const xCoor = newArrCoords[0] + 1;
+  return [xCoor, 0];
 };
 
 export default App;
