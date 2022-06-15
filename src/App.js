@@ -84,7 +84,7 @@ const SquareComponent = (props) => {
   return <div className="Wordle-square">{props.square}</div>;
 };
 
-const RowComponent = (props) => {
+const RowComponent = ({}) => {
   return (
     <div className="Wordle-row">
       {props.row.map((square, index) => {
@@ -99,14 +99,14 @@ const RowComponent = (props) => {
   );
 };
 
-const ColumnComponent = (props) => {
+const ColumnComponent = ({ wordleGuessList }) => {
   return (
     <div className="Wordle-column">
-      {props.wordleGuessList.map((row, index) => {
+      {wordleGuessList.map((row, index) => {
         return (
           <RowComponent
             key={`row-component-${index}`}
-            rowIndex={index}
+            rowIndex={row}
             row={row}
           ></RowComponent>
         );
