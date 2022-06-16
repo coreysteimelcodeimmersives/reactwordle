@@ -1,12 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import { answerList, wordList } from "./wordleWords.js";
-
-const wordleArr = answerList;
-const rand = Math.floor(Math.random() * wordleArr.length);
-const answer = wordleArr[rand];
-const answerArr = answer.split("");
-console.log(answerArr);
 const defaultGuessList = [
   ["", "", "", "", ""],
   ["", "", "", "", ""],
@@ -16,10 +10,11 @@ const defaultGuessList = [
   ["", "", "", "", ""],
 ];
 
-const keysRow1 = ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"];
-const keysRow2 = ["A", "S", "D", "F", "G", "H", "J", "K", "L"];
-const keysRow3 = ["Delete", "Z", "X", "C", "V", "B", "N", "M", "Enter"];
+const keysRow1 = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"];
+const keysRow2 = ["a", "s", "d", "f", "g", "h", "j", "k", "l"];
+const keysRow3 = ["Delete", "z", "x", "c", "v", "b", "n", "m", "Enter"];
 const keyBoardArr = [keysRow1, keysRow2, keysRow3];
+const allKeys = [...keysRow1, ...keysRow2, ...keysRow3, "Backspace"];
 // const statusObject = {
 //   blank: "#333333",
 //   incorrect: "gray",
@@ -32,13 +27,18 @@ function App() {
     JSON.parse(JSON.stringify(defaultGuessList))
   );
   const [arrCoords, setArrayCoords] = useState([0, 0]);
+  const [wordleAnswer, setWordleAnswer] = useState(pickWordleAnswer());
+  const [wordleAnswerArr, setWordleAnswerArr] = useState(
+    wordleAnswer.split("")
+  );
+  const [gameState, setGameState] = useState("playing");
 
   const handleKeyEvent = (letter) => {
-    const newGuess = letter;
+    const newGuess = showDelete(letter);
 
-    const newArrCoords = [...arrCoords];
+    const arrCoordsCopy = [...arrCoords];
 
-    const updatedWordleGuessList = [
+    const wordleGuessListCopy = [
       [...wordleGuessList[0]],
       [...wordleGuessList[1]],
       [...wordleGuessList[2]],
@@ -47,40 +47,56 @@ function App() {
       [...wordleGuessList[5]],
     ];
 
-    const rowCoord = newArrCoords[0];
-    const newWordleRow = updatedWordleGuessList[rowCoord];
-    const colCoord = newArrCoords[1];
+    const rowCoord = arrCoordsCopy[0];
+    const wordleRow = wordleGuessListCopy[rowCoord];
+    const colCoord = arrCoordsCopy[1];
 
     if (newGuess === "Enter") {
-      const updateArrCoords = handleEnter(newWordleRow, newArrCoords);
-      setArrayCoords(updateArrCoords);
-    }
-
-    const squareIndex = handleDelete(newGuess, colCoord);
-    if (squareIndex === 5) {
+      const newUpdateArrCoords = handleEnter(
+        wordleRow,
+        arrCoordsCopy,
+        wordleAnswer
+      );
+      setArrayCoords(newUpdateArrCoords);
       return;
     }
-    newWordleRow[squareIndex] = setKeyValue(newGuess, squareIndex);
-    updatedWordleGuessList[rowCoord] = newWordleRow;
-    setWordleGuessList(updatedWordleGuessList);
-    newArrCoords[1] = setSquareIndexValue(newGuess, squareIndex);
-    setArrayCoords(newArrCoords);
+
+    const newColCoord = setIndexForDelete(newGuess, colCoord);
+
+    if (newColCoord === 5) {
+      return;
+    }
+
+    wordleGuessListCopy[rowCoord] = updateWordleRow(
+      newGuess,
+      newColCoord,
+      wordleRow
+    );
+
+    setWordleGuessList(wordleGuessListCopy);
+    arrCoordsCopy[1] = updateColCoord(newGuess, newColCoord);
+    setArrayCoords(arrCoordsCopy);
+    console.log(arrCoordsCopy);
+    return;
   };
+
+  useKeyPress(allKeys, handleKeyEvent, arrCoords);
 
   return (
     <div className="App">
       <header className="App-header">
         <h1 className="Cool">Wordle Copy</h1>
-        <div>Answer: {answer}</div>
-        <ColumnComponent wordleGuessList={wordleGuessList} />
-        <KeyBoardComponent handleKeyEvent={handleKeyEvent} />
+        <div>Answer: {wordleAnswer}</div>
+        <WordleGrid wordleGuessList={wordleGuessList} />
+        <WordleKeyboard handleKeyEvent={handleKeyEvent} />
       </header>
     </div>
   );
 }
 
 const SquareComponent = ({ square }) => {
-  return <div className="Wordle-square">{square}</div>;
+  const newSquare = showCaps(square);
+  return <div className="Wordle-square">{newSquare}</div>;
 };
 
 const RowComponent = ({ rowIndex, row }) => {
@@ -98,7 +114,7 @@ const RowComponent = ({ rowIndex, row }) => {
   );
 };
 
-const ColumnComponent = ({ wordleGuessList }) => {
+const WordleGrid = ({ wordleGuessList }) => {
   return (
     <div className="Wordle-column">
       {wordleGuessList.map((row, index) => {
@@ -115,6 +131,8 @@ const ColumnComponent = ({ wordleGuessList }) => {
 };
 
 const KeyComponent = ({ letter, handleKeyEvent }) => {
+  const newLetter = showCaps(letter);
+
   return (
     <div
       className="Keyboard-key"
@@ -123,7 +141,7 @@ const KeyComponent = ({ letter, handleKeyEvent }) => {
         handleKeyEvent(letter);
       }}
     >
-      {letter}
+      {newLetter}
     </div>
   );
 };
@@ -144,7 +162,7 @@ const KeyRowComponent = ({ keyRow, handleKeyEvent }) => {
   );
 };
 
-const KeyBoardComponent = ({ handleKeyEvent }) => {
+const WordleKeyboard = ({ handleKeyEvent }) => {
   return (
     <div className="Keyboard-grid">
       {keyBoardArr.map((row, index) => {
@@ -160,58 +178,43 @@ const KeyBoardComponent = ({ handleKeyEvent }) => {
   );
 };
 
-const handleDelete = (newGuess, indexToSet) => {
-  if (newGuess === "Delete") {
-    return indexToSet - 1;
-  }
-  return indexToSet;
-};
-
-const setKeyValue = (newGuess, squareIndex) => {
-  if (squareIndex > 4) {
-    return;
+const setIndexForDelete = (newGuess, colCoord) => {
+  if (colCoord === 0) {
+    return colCoord;
   }
 
   if (newGuess === "Delete") {
-    return "";
+    const newColCoord = colCoord - 1;
+    return newColCoord;
   }
-  if (newGuess === "Enter") {
-    // Do Something
-    return;
-  }
-  if (squareIndex <= 4) {
-    return newGuess;
-  }
-  return;
+
+  return colCoord;
 };
 
-const setSquareIndexValue = (newGuess, squareIndex) => {
-  if (newGuess === "Enter") {
-    return squareIndex;
-  }
-
-  if (squareIndex < 0) {
-    return 0;
-  }
-
+const updateWordleRow = (newGuess, colCoord, wordleRow) => {
   if (newGuess === "Delete") {
-    return squareIndex;
+    wordleRow[colCoord] = "";
+    return wordleRow;
   }
-  if (squareIndex <= 4) {
-    // return newGuess;
-    return squareIndex + 1;
-  }
-  return;
+  wordleRow[colCoord] = newGuess;
+  return wordleRow;
 };
 
-const handleEnter = (newWordleRow, newArrCoords) => {
+const updateColCoord = (newGuess, colCoord) => {
+  if (newGuess === "Delete") {
+    return colCoord;
+  }
+  return colCoord + 1;
+};
+
+const handleEnter = (newWordleRow, newArrCoords, wordleAnswer) => {
   if (newWordleRow.includes("")) {
     alert("Too short");
     return newArrCoords;
   }
   const userWord = newWordleRow.join("").toLowerCase();
 
-  if (userWord === answer) {
+  if (userWord === wordleAnswer) {
     alert("Congrats, you won!");
     return newArrCoords;
   }
@@ -223,6 +226,49 @@ const handleEnter = (newWordleRow, newArrCoords) => {
 
   const xCoor = newArrCoords[0] + 1;
   return [xCoor, 0];
+};
+
+const pickWordleAnswer = () => {
+  const rand = Math.floor(Math.random() * answerList.length);
+
+  return answerList[rand];
+};
+
+function useKeyPress(targetKeys, handler, arrCoords) {
+  const upHandler = ({ key }) => {
+    console.log(key);
+
+    if (targetKeys.includes(key)) {
+      handler(key);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keyup", upHandler);
+    return () => {
+      window.removeEventListener("keyup", upHandler);
+    };
+  }, [arrCoords]);
+}
+
+const showCaps = (letter) => {
+  if (letter === "Delete") {
+    return letter;
+  }
+  if (letter === "Enter") {
+    return letter;
+  }
+
+  const newLetter = letter.toUpperCase();
+
+  return newLetter;
+};
+
+const showDelete = (letter) => {
+  if (letter === "Backspace") {
+    return "Delete";
+  }
+  return letter;
 };
 
 export default App;
