@@ -234,7 +234,7 @@ const pickWordleAnswer = () => {
   return answerList[rand];
 };
 
-function useKeyPress(targetKeys, handler, arrCoords) {
+const useKeyPress = (targetKeys, handler, arrCoords) => {
   const upHandler = ({ key }) => {
     console.log(key);
 
@@ -249,7 +249,7 @@ function useKeyPress(targetKeys, handler, arrCoords) {
       window.removeEventListener("keyup", upHandler);
     };
   }, [arrCoords]);
-}
+};
 
 const showCaps = (letter) => {
   if (letter === "Delete") {
