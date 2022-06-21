@@ -2,12 +2,138 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import { answerList, wordList } from "./wordleWords.js";
 const defaultGuessList = [
-  ["", "", "", "", ""],
-  ["", "", "", "", ""],
-  ["", "", "", "", ""],
-  ["", "", "", "", ""],
-  ["", "", "", "", ""],
-  ["", "", "", "", ""],
+  [
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+  ],
+  [
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+  ],
+  [
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+  ],
+  [
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+  ],
+  [
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+  ],
+  [
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+    {
+      letter: "",
+      className: "Wordle-square",
+    },
+  ],
 ];
 
 const keysRow1 = ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"];
@@ -15,17 +141,12 @@ const keysRow2 = ["a", "s", "d", "f", "g", "h", "j", "k", "l"];
 const keysRow3 = ["Delete", "z", "x", "c", "v", "b", "n", "m", "Enter"];
 const keyBoardArr = [keysRow1, keysRow2, keysRow3];
 const allKeys = [...keysRow1, ...keysRow2, ...keysRow3, "Backspace"];
-// const statusObject = {
-//   blank: "#333333",
-//   incorrect: "gray",
-//   wrongSpot: "yellow",
-//   correct: "green",
-// };
 
 function App() {
   const [wordleGuessList, setWordleGuessList] = useState(
     JSON.parse(JSON.stringify(defaultGuessList))
   );
+  const [letterColor, setLetterColor] = useState({});
   const [arrCoords, setArrayCoords] = useState([0, 0]);
   const [wordleAnswer, setWordleAnswer] = useState(pickWordleAnswer());
   const [wordleAnswerArr, setWordleAnswerArr] = useState(
@@ -34,30 +155,59 @@ function App() {
   const [gameState, setGameState] = useState("playing");
 
   const handleKeyEvent = (letter) => {
-    const newGuess = showDelete(letter);
+    const newGuess = handleNewGuess(letter);
 
     const arrCoordsCopy = [...arrCoords];
 
     const wordleGuessListCopy = [
-      [...wordleGuessList[0]],
-      [...wordleGuessList[1]],
-      [...wordleGuessList[2]],
-      [...wordleGuessList[3]],
-      [...wordleGuessList[4]],
-      [...wordleGuessList[5]],
+      JSON.parse(JSON.stringify(wordleGuessList[0])),
+      JSON.parse(JSON.stringify(wordleGuessList[1])),
+      JSON.parse(JSON.stringify(wordleGuessList[2])),
+      JSON.parse(JSON.stringify(wordleGuessList[3])),
+      JSON.parse(JSON.stringify(wordleGuessList[4])),
+      JSON.parse(JSON.stringify(wordleGuessList[5])),
     ];
-
     const rowCoord = arrCoordsCopy[0];
     const wordleRow = wordleGuessListCopy[rowCoord];
     const colCoord = arrCoordsCopy[1];
+    const wordleRowLettersArr = wordleRow.map((key) => {
+      return key.letter;
+    });
+
+    if (gameState !== "playing") {
+      return;
+    }
 
     if (newGuess === "Enter") {
       const newUpdateArrCoords = handleEnter(
-        wordleRow,
+        wordleRowLettersArr,
         arrCoordsCopy,
         wordleAnswer
       );
+
       setArrayCoords(newUpdateArrCoords);
+      wordleGuessListCopy[rowCoord] = updateSquareClassName(
+        wordleRowLettersArr,
+        wordleAnswerArr,
+        wordleRow
+      );
+      setWordleGuessList(wordleGuessListCopy);
+      const newLetterColor = letterColor;
+
+      const updatedLetterColor = updateKeyboardClassName(
+        wordleRowLettersArr,
+        wordleAnswerArr,
+        newLetterColor
+      );
+
+      setLetterColor(updatedLetterColor);
+
+      const newGameState = winOrLose(
+        wordleRowLettersArr,
+        wordleAnswer,
+        rowCoord
+      );
+      setGameState(newGameState);
       return;
     }
 
@@ -74,9 +224,9 @@ function App() {
     );
 
     setWordleGuessList(wordleGuessListCopy);
+
     arrCoordsCopy[1] = updateColCoord(newGuess, newColCoord);
     setArrayCoords(arrCoordsCopy);
-    console.log(arrCoordsCopy);
     return;
   };
 
@@ -85,18 +235,21 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1 className="Cool">Wordle Copy</h1>
+        <h1 className="App-link">Wordle Copy</h1>
         <div>Answer: {wordleAnswer}</div>
         <WordleGrid wordleGuessList={wordleGuessList} />
-        <WordleKeyboard handleKeyEvent={handleKeyEvent} />
+        <WordleKeyboard
+          handleKeyEvent={handleKeyEvent}
+          letterColor={letterColor}
+        />
       </header>
     </div>
   );
 }
 
 const SquareComponent = ({ square }) => {
-  const newSquare = showCaps(square);
-  return <div className="Wordle-square">{newSquare}</div>;
+  const newSquare = showCaps(square.letter);
+  return <div className={square.className}>{newSquare}</div>;
 };
 
 const RowComponent = ({ rowIndex, row }) => {
@@ -130,13 +283,17 @@ const WordleGrid = ({ wordleGuessList }) => {
   );
 };
 
-const KeyComponent = ({ letter, handleKeyEvent }) => {
+const KeyComponent = ({ letter, handleKeyEvent, letterColor }) => {
   const newLetter = showCaps(letter);
-
+  const letterColorCheck = letterColor[letter]
+    ? letterColor[letter]
+    : "Keyboard-key";
+  // console.log(letterColor[newLetter]);
+  // const letterColorCheck = setKeyboardClassName(letterColor, letter);
+  // console.log(letterColorCheck);
   return (
     <div
-      className="Keyboard-key"
-      // id={letter}
+      className={letterColorCheck}
       onClick={(e) => {
         handleKeyEvent(letter);
       }}
@@ -146,7 +303,7 @@ const KeyComponent = ({ letter, handleKeyEvent }) => {
   );
 };
 
-const KeyRowComponent = ({ keyRow, handleKeyEvent }) => {
+const KeyRowComponent = ({ keyRow, handleKeyEvent, letterColor }) => {
   return (
     <div className="Keyboard-row">
       {keyRow.map((letter, index) => {
@@ -155,6 +312,7 @@ const KeyRowComponent = ({ keyRow, handleKeyEvent }) => {
             key={letter}
             letter={letter}
             handleKeyEvent={handleKeyEvent}
+            letterColor={letterColor}
           ></KeyComponent>
         );
       })}
@@ -162,7 +320,7 @@ const KeyRowComponent = ({ keyRow, handleKeyEvent }) => {
   );
 };
 
-const WordleKeyboard = ({ handleKeyEvent }) => {
+const WordleKeyboard = ({ handleKeyEvent, letterColor }) => {
   return (
     <div className="Keyboard-grid">
       {keyBoardArr.map((row, index) => {
@@ -171,6 +329,7 @@ const WordleKeyboard = ({ handleKeyEvent }) => {
             key={row}
             keyRow={row}
             handleKeyEvent={handleKeyEvent}
+            letterColor={letterColor}
           ></KeyRowComponent>
         );
       })}
@@ -183,7 +342,7 @@ const setIndexForDelete = (newGuess, colCoord) => {
     return colCoord;
   }
 
-  if (newGuess === "Delete") {
+  if (newGuess === "Backspace") {
     const newColCoord = colCoord - 1;
     return newColCoord;
   }
@@ -192,32 +351,29 @@ const setIndexForDelete = (newGuess, colCoord) => {
 };
 
 const updateWordleRow = (newGuess, colCoord, wordleRow) => {
-  if (newGuess === "Delete") {
-    wordleRow[colCoord] = "";
+  if (newGuess === "Backspace") {
+    wordleRow[colCoord].letter = "";
     return wordleRow;
   }
-  wordleRow[colCoord] = newGuess;
+
+  wordleRow[colCoord].letter = newGuess;
+
   return wordleRow;
 };
 
 const updateColCoord = (newGuess, colCoord) => {
-  if (newGuess === "Delete") {
+  if (newGuess === "Backspace") {
     return colCoord;
   }
   return colCoord + 1;
 };
 
-const handleEnter = (newWordleRow, newArrCoords, wordleAnswer) => {
-  if (newWordleRow.includes("")) {
+const handleEnter = (wordleRowLettersArr, newArrCoords, wordleAnswer) => {
+  if (wordleRowLettersArr.includes("")) {
     alert("Too short");
     return newArrCoords;
   }
-  const userWord = newWordleRow.join("").toLowerCase();
-
-  if (userWord === wordleAnswer) {
-    alert("Congrats, you won!");
-    return newArrCoords;
-  }
+  const userWord = wordleRowLettersArr.join("");
 
   if (!answerList.includes(userWord) && !wordList.includes(userWord)) {
     alert("Word not found");
@@ -236,13 +392,11 @@ const pickWordleAnswer = () => {
 
 const useKeyPress = (targetKeys, handler, arrCoords) => {
   const upHandler = ({ key }) => {
-    console.log(key);
-
-    if (targetKeys.includes(key)) {
-      handler(key);
+    const newKey = handleNewGuess(key);
+    if (targetKeys.includes(newKey)) {
+      handler(newKey);
     }
   };
-
   useEffect(() => {
     window.addEventListener("keyup", upHandler);
     return () => {
@@ -253,8 +407,9 @@ const useKeyPress = (targetKeys, handler, arrCoords) => {
 
 const showCaps = (letter) => {
   if (letter === "Delete") {
-    return letter;
+    return "Delete";
   }
+
   if (letter === "Enter") {
     return letter;
   }
@@ -264,11 +419,78 @@ const showCaps = (letter) => {
   return newLetter;
 };
 
-const showDelete = (letter) => {
+const handleNewGuess = (letter) => {
   if (letter === "Backspace") {
-    return "Delete";
+    return "Backspace";
   }
-  return letter;
+  if (letter === "Delete") {
+    return "Backspace";
+  }
+  if (letter === "Enter") {
+    return "Enter";
+  }
+  return letter.toLowerCase();
+};
+
+const updateSquareClassName = (
+  wordleRowLettersArr,
+  wordleAnswerArr,
+  wordleRow
+) => {
+  wordleRowLettersArr.map((square, index) => {
+    if (!wordleAnswerArr.includes(square)) {
+      wordleRow[index].className = "Wordle-square grey";
+    }
+    if (wordleAnswerArr.includes(square)) {
+      wordleRow[index].className = "Wordle-square orange";
+    }
+    if (square === wordleAnswerArr[index]) {
+      // return <div className="Wordle-square-correct"
+      console.log("should be green");
+      wordleRow[index].className = "Wordle-square green";
+    }
+  });
+  return wordleRow;
+};
+
+const updateKeyboardClassName = (
+  wordleRowLettersArr,
+  wordleAnswerArr,
+  newLetterColor
+) => {
+  wordleRowLettersArr.map((square, index) => {
+    if (!wordleAnswerArr.includes(square)) {
+      newLetterColor[square] = "Keyboard-key grey";
+    }
+    if (
+      wordleAnswerArr.includes(square) &&
+      newLetterColor[square] !== "Keyboard-key green"
+    ) {
+      newLetterColor[square] = "Keyboard-key orange";
+    }
+    if (square === wordleAnswerArr[index]) {
+      newLetterColor[square] = "Keyboard-key green";
+    }
+  });
+
+  return newLetterColor;
+};
+
+const winOrLose = (wordleRowLettersArr, wordleAnswer, rowCoord) => {
+  const userAns = wordleRowLettersArr.join("");
+
+  if (userAns === wordleAnswer) {
+    alert("Congrats, you won!");
+
+    return "won";
+  }
+  if (rowCoord === 5) {
+    alert("Sorry, you lost.");
+
+    return "lost";
+  }
+
+  return "playing";
 };
 
 export default App;

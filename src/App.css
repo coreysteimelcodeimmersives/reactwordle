@@ -45,6 +45,8 @@
   border-radius: 20%;
   border: medium solid grey;
   margin: 5px;
+  justify-content: center;
+  align-items: center;
 }
 
 .Wordle-row {
@@ -79,4 +81,16 @@
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
+}
+
+.green {
+  background-color: green;
+}
+
+.grey {
+  background-color: grey;
+}
+
+.orange {
+  background-color: orange;
 }
