@@ -241,7 +241,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1 className="App-link">Wordle Copy</h1>
-        <div>Answer: {wordleAnswer}</div>
+        {/* <div>Answer: {wordleAnswer}</div> */}
         <WordleGrid wordleGuessList={wordleGuessList} />
         <WordleKeyboard
           handleKeyEvent={handleKeyEvent}
@@ -496,6 +496,7 @@ const winOrLose = (wordleRowLettersArr, wordleAnswer, rowCoord) => {
   }
   if (rowCoord === 5) {
     alert("Sorry, you lost.");
+    alert("The Wordle Word is: " + wordleAnswer.toUpperCase());
 
     return "lost";
   }
