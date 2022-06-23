@@ -155,6 +155,9 @@ function App() {
   const [gameState, setGameState] = useState("playing");
 
   const handleKeyEvent = (letter) => {
+    if (gameState !== "playing") {
+      return;
+    }
     const newGuess = handleNewGuess(letter);
 
     const arrCoordsCopy = [...arrCoords];
@@ -179,11 +182,13 @@ function App() {
     }
 
     if (newGuess === "Enter") {
-      const newUpdateArrCoords = handleEnter(
-        wordleRowLettersArr,
-        arrCoordsCopy,
-        wordleAnswer
-      );
+      const validGuess = handleEnter(wordleRowLettersArr, wordleAnswer);
+
+      if (!validGuess) {
+        return;
+      }
+
+      const newUpdateArrCoords = handleArrCoords(arrCoordsCopy);
 
       setArrayCoords(newUpdateArrCoords);
       wordleGuessListCopy[rowCoord] = updateSquareClassName(
@@ -288,9 +293,6 @@ const KeyComponent = ({ letter, handleKeyEvent, letterColor }) => {
   const letterColorCheck = letterColor[letter]
     ? letterColor[letter]
     : "Keyboard-key";
-  // console.log(letterColor[newLetter]);
-  // const letterColorCheck = setKeyboardClassName(letterColor, letter);
-  // console.log(letterColorCheck);
   return (
     <div
       className={letterColorCheck}
@@ -368,18 +370,26 @@ const updateColCoord = (newGuess, colCoord) => {
   return colCoord + 1;
 };
 
-const handleEnter = (wordleRowLettersArr, newArrCoords, wordleAnswer) => {
+const handleEnter = (wordleRowLettersArr, wordleAnswer) => {
   if (wordleRowLettersArr.includes("")) {
     alert("Too short");
-    return newArrCoords;
+    return false;
   }
   const userWord = wordleRowLettersArr.join("");
 
   if (!answerList.includes(userWord) && !wordList.includes(userWord)) {
     alert("Word not found");
-    return newArrCoords;
+    return false;
   }
 
+  if (userWord !== wordleAnswer) {
+    alert("Sorry, wrong guess");
+  }
+
+  return true;
+};
+
+const handleArrCoords = (newArrCoords) => {
   const xCoor = newArrCoords[0] + 1;
   return [xCoor, 0];
 };
