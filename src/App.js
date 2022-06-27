@@ -148,7 +148,8 @@ function App() {
   );
   const [letterColor, setLetterColor] = useState({});
   const [arrCoords, setArrayCoords] = useState([0, 0]);
-  const [wordleAnswer, setWordleAnswer] = useState(pickWordleAnswer());
+  // const [wordleAnswer, setWordleAnswer] = useState(pickWordleAnswer());
+  const [wordleAnswer, setWordleAnswer] = useState("karma");
   const [wordleAnswerArr, setWordleAnswerArr] = useState(
     wordleAnswer.split("")
   );
@@ -241,7 +242,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1 className="App-link">Wordle Copy</h1>
-        {/* <div>Answer: {wordleAnswer}</div> */}
+        <div>Answer: {wordleAnswer}</div>
         <WordleGrid wordleGuessList={wordleGuessList} />
         <WordleKeyboard
           handleKeyEvent={handleKeyEvent}
@@ -371,22 +372,22 @@ const updateColCoord = (newGuess, colCoord) => {
 };
 
 const handleEnter = (wordleRowLettersArr, wordleAnswer) => {
-  if (wordleRowLettersArr.includes("")) {
-    alert("Too short");
-    return false;
+  if (!wordleRowLettersArr.includes("")) {
+    // alert("Too short");
+    return true;
   }
   const userWord = wordleRowLettersArr.join("");
 
-  if (!answerList.includes(userWord) && !wordList.includes(userWord)) {
-    alert("Word not found");
-    return false;
+  if (answerList.includes(userWord) || wordList.includes(userWord)) {
+    return true;
   }
 
-  if (userWord !== wordleAnswer) {
-    alert("Sorry, wrong guess");
+  if (userWord === wordleAnswer) {
+    // alert("Sorry, wrong guess");
+    return true;
   }
 
-  return true;
+  return false;
 };
 
 const handleArrCoords = (newArrCoords) => {
@@ -430,10 +431,7 @@ const showCaps = (letter) => {
 };
 
 const handleNewGuess = (letter) => {
-  if (letter === "Backspace") {
-    return "Backspace";
-  }
-  if (letter === "Delete") {
+  if (letter === "Backspace" || letter === "Delete") {
     return "Backspace";
   }
   if (letter === "Enter") {
@@ -447,20 +445,79 @@ const updateSquareClassName = (
   wordleAnswerArr,
   wordleRow
 ) => {
-  wordleRowLettersArr.map((square, index) => {
-    if (!wordleAnswerArr.includes(square)) {
-      wordleRow[index].className = "Wordle-square grey";
+  console.log(wordleRowLettersArr);
+  return calculateGuessResult(
+    wordleRow,
+    wordleAnswerArr.join("").toLowerCase()
+  );
+};
+
+export const calculateGuessResult = (currentGuessArray, wordleAnswer) => {
+  const guessLetterCount = {};
+  const answerLetterCount = {};
+  const currentGuessArrayCopy = JSON.parse(JSON.stringify(currentGuessArray));
+
+  //GreyCount Loop
+  for (let i = 0; i < currentGuessArray.length; i++) {
+    currentGuessArrayCopy[i] = {
+      ...currentGuessArrayCopy[i],
+      className: "Wordle-square grey",
+    };
+
+    const wordleAnswerLower = wordleAnswer[i].toLowerCase();
+    if (!answerLetterCount.hasOwnProperty(wordleAnswerLower)) {
+      answerLetterCount[wordleAnswerLower] = 1;
+    } else {
+      answerLetterCount[wordleAnswerLower]++;
     }
-    if (wordleAnswerArr.includes(square)) {
-      wordleRow[index].className = "Wordle-square orange";
+  }
+
+  //GreenYellow Loop
+  for (let i = 0; i < currentGuessArray.length; i++) {
+    const letterLower = currentGuessArray[i].letter.toLowerCase();
+    if (!guessLetterCount.hasOwnProperty(letterLower)) {
+      guessLetterCount[letterLower] = 1;
     }
-    if (square === wordleAnswerArr[index]) {
-      // return <div className="Wordle-square-correct"
-      console.log("should be green");
-      wordleRow[index].className = "Wordle-square green";
+
+    if (wordleAnswer[i] === letterLower) {
+      currentGuessArrayCopy[i] = {
+        ...currentGuessArrayCopy[i],
+        className: "Wordle-square green",
+      };
+      guessLetterCount[letterLower]--;
     }
-  });
-  return wordleRow;
+
+    if (
+      answerLetterCount.hasOwnProperty(letterLower) &&
+      guessLetterCount[letterLower] > 0
+    ) {
+      currentGuessArrayCopy[i] = {
+        ...currentGuessArrayCopy[i],
+        className: "Wordle-square orange",
+      };
+      guessLetterCount[letterLower]--;
+    }
+  }
+  return currentGuessArrayCopy;
+
+  //GreyCount Loop
+  //Flag Grey
+  //If ! global answer counter hasOwnProperty(answer[i])
+  //Add answer[i] to global answer counter
+  //Else increment answer[i] in global answer counter
+
+  //GreenYellow Loop
+  //If ! global letter counter hasOwnProperty(letter)
+  //Add letter to global letter counter
+
+  //If letter === wordleAnswer @ index
+  //Flag Green
+  //Decrement global letter counter
+
+  //If global answer counter hasOwnProperty(letter)
+  //&& global counter [letter] > 0
+  //Flag Yellow
+  //Decrement global letter counter
 };
 
 const updateKeyboardClassName = (
@@ -495,8 +552,8 @@ const winOrLose = (wordleRowLettersArr, wordleAnswer, rowCoord) => {
     return "won";
   }
   if (rowCoord === 5) {
-    alert("Sorry, you lost.");
-    alert("The Wordle Word is: " + wordleAnswer.toUpperCase());
+    // alert("Sorry, you lost.");
+    // alert("The Wordle Word is: " + wordleAnswer.toUpperCase());
 
     return "lost";
   }
